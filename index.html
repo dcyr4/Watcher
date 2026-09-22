@@ -6,102 +6,163 @@
 <title>Watcher</title>
 <style>
 :root{
-  --bg:#f6f4ef; --surface:#ffffff; --surface-2:#efece3;
-  --ink:#1c1a16; --ink-dim:#6b6558; --line:#e1ddd0;
-  --accent:#8a5a34; --accent-2:#3d5a4c;
+  --bg:#f4efe4; --surface:#fffdf8; --surface-2:#ece3d1;
+  --ink:#1c1712; --ink-dim:#786b53; --line:#e3d8bf;
+  --gold:#a9822f; --gold-deep:#7c5c1e; --gold-soft:#f1e5c4;
   --rotation:#3d5a4c; --rotation-bg:#e5ece7;
+  --pending:#7c5c3a; --pending-bg:#efe3d2;
   --ideas:#a5842f; --ideas-bg:#f3ead4;
   --planning:#8a5a34; --planning-bg:#f2e6d8;
+  --danger:#a3402f;
+  --shadow:0 10px 30px rgba(30,24,10,.10);
 }
 @media (prefers-color-scheme: dark){
   :root{
-    --bg:#171613; --surface:#211f1a; --surface-2:#28261f;
-    --ink:#efece2; --ink-dim:#a39c8a; --line:#3a3628;
-    --accent:#d19a63; --accent-2:#7fae97;
-    --rotation:#7fae97; --rotation-bg:#243128;
-    --ideas:#d1ab54; --ideas-bg:#332c1c;
-    --planning:#d19a63; --planning-bg:#332720;
+    --bg:#0f0d09; --surface:#1b170f; --surface-2:#241f15;
+    --ink:#f2ead7; --ink-dim:#ab9c7c; --line:#382f1f;
+    --gold:#d9b25f; --gold-deep:#b3903f; --gold-soft:#3a2f18;
+    --rotation:#8fc0a8; --rotation-bg:#1f2a22;
+    --pending:#cf9d68; --pending-bg:#2c2216;
+    --ideas:#e0bd66; --ideas-bg:#2e2716;
+    --planning:#dba372; --planning-bg:#2c2118;
+    --danger:#e08a76;
+    --shadow:0 10px 30px rgba(0,0,0,.4);
   }
 }
 *{box-sizing:border-box;}
 html,body{background:var(--bg); color:var(--ink); margin:0; height:100%;}
 body{
-  font-family:'Inter Tight','Segoe UI',system-ui,sans-serif;
-  padding-inline:16px; padding-block:0 100px;
-  max-width:900px; margin:0 auto;
+  font-family:'Jost','Inter Tight','Segoe UI',system-ui,sans-serif;
+  padding-inline:18px; padding-block:0 100px;
+  max-width:960px; margin:0 auto;
+  background-image:
+    radial-gradient(ellipse at top, color-mix(in srgb, var(--gold) 6%, transparent), transparent 55%);
 }
 h1,h2,h3{font-family:'Fraunces','Georgia',serif; margin:0;}
 button{font-family:inherit;}
-header{position:sticky; top:0; z-index:5; background:var(--bg); padding-top:20px; padding-bottom:12px;}
-header h1{font-size:26px; font-weight:600;}
-header p{color:var(--ink-dim); font-size:13px; margin:4px 0 0;}
-.tabs{display:flex; gap:6px; margin-top:16px; border-bottom:1px solid var(--line);}
-.tab{appearance:none; border:none; background:none; cursor:pointer; padding:10px 14px; font-size:13.5px; font-weight:600; color:var(--ink-dim); border-bottom:2px solid transparent; margin-bottom:-1px; display:flex; align-items:center; gap:6px;}
-.tab[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--accent);}
-.tab .n{font-size:11px; background:var(--surface-2); color:var(--ink-dim); padding:1px 6px; border-radius:100px;}
-main{padding-top:18px;}
-.empty{text-align:center; padding:48px 16px; color:var(--ink-dim); border:1px dashed var(--line); border-radius:14px; font-size:14px;}
-.empty strong{display:block; color:var(--ink); font-size:16px; margin-bottom:6px; font-family:'Fraunces',serif; font-weight:600;}
-.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px;}
-.card{background:var(--surface); border:1px solid var(--line); border-radius:14px; overflow:hidden; display:flex; flex-direction:column; position:relative;}
-.card .photo{width:100%; aspect-ratio:4/3; background:var(--surface-2); display:flex; align-items:center; justify-content:center; overflow:hidden;}
+
+header{position:sticky; top:0; z-index:5; background:var(--bg); padding-top:22px; padding-bottom:10px;}
+header .brand{display:flex; align-items:baseline; gap:10px;}
+header h1{font-size:28px; font-weight:600; letter-spacing:.01em;}
+header .brand svg{width:22px; height:22px; color:var(--gold); flex-shrink:0;}
+header p{color:var(--ink-dim); font-size:12.5px; margin:3px 0 0; letter-spacing:.03em; text-transform:uppercase;}
+
+.tabs{display:flex; gap:2px; margin-top:18px; border-bottom:1px solid var(--line); overflow-x:auto; scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{appearance:none; border:none; background:none; cursor:pointer; padding:10px 14px; font-size:12.5px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-dim); border-bottom:2px solid transparent; margin-bottom:-1px; display:flex; align-items:center; gap:6px; white-space:nowrap;}
+.tab[aria-selected="true"]{color:var(--gold-deep); border-bottom-color:var(--gold);}
+@media (prefers-color-scheme: dark){ .tab[aria-selected="true"]{color:var(--gold);} }
+.tab .n{font-size:10.5px; background:var(--surface-2); color:var(--ink-dim); padding:1px 6px; border-radius:100px;}
+
+main{padding-top:20px; touch-action:pan-y;}
+.empty{text-align:center; padding:56px 16px; color:var(--ink-dim); border:1px dashed var(--line); border-radius:16px; font-size:14px;}
+.empty strong{display:block; color:var(--ink); font-size:18px; margin-bottom:6px; font-family:'Fraunces',serif; font-weight:600;}
+
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px;}
+
+.card{background:var(--surface); border:1px solid var(--line); border-radius:16px; overflow:hidden; display:flex; flex-direction:column; position:relative; box-shadow:var(--shadow); cursor:pointer; transition:transform .15s;}
+.card:hover{transform:translateY(-2px);}
+.card .photo{width:100%; aspect-ratio:4/3; background:var(--surface-2); display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative;}
 .card .photo img{width:100%; height:100%; object-fit:cover; display:block;}
-.card .photo svg{width:40px; height:40px; opacity:.35;}
-.card .body{padding:13px; display:flex; flex-direction:column; gap:8px; flex:1;}
+.card .photo svg{width:38px; height:38px; opacity:.3; color:var(--gold);}
+.card .photo .count{position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,.55); color:#fff; font-size:10.5px; padding:2px 7px; border-radius:100px; font-family:'JetBrains Mono',monospace;}
+.card .body{padding:14px; display:flex; flex-direction:column; gap:8px; flex:1;}
 .card .top-row{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
-.badge{font-size:10px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; padding:3px 8px; border-radius:100px; white-space:nowrap;}
+.badge{font-size:9.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; padding:3px 8px; border-radius:100px; white-space:nowrap;}
 .badge.rotation{background:var(--rotation-bg); color:var(--rotation);}
+.badge.pending{background:var(--pending-bg); color:var(--pending);}
 .badge.ideas{background:var(--ideas-bg); color:var(--ideas);}
 .badge.planning{background:var(--planning-bg); color:var(--planning);}
-.card h3{font-size:15.5px; font-weight:600; line-height:1.25;}
-.card .model{font-size:11.5px; color:var(--ink-dim); font-family:'JetBrains Mono',monospace;}
+.badge.role{background:var(--gold-soft); color:var(--gold-deep); border:1px solid color-mix(in srgb, var(--gold) 35%, transparent);}
+@media (prefers-color-scheme: dark){ .badge.role{color:var(--gold);} }
+.card h3{font-size:16.5px; font-weight:600; line-height:1.25; font-family:'Fraunces',serif;}
+.card .model{font-size:11px; color:var(--ink-dim); font-family:'JetBrains Mono',monospace; letter-spacing:.02em;}
 .card .dial-price{display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--ink-dim);}
-.card .price{font-family:'JetBrains Mono',monospace; font-weight:600; color:var(--accent); font-size:13.5px;}
-.card .specs{font-size:12px; color:var(--ink-dim); line-height:1.5; border-top:1px solid var(--line); padding-top:8px;}
-.card .del{position:absolute; top:8px; right:8px; width:26px; height:26px; border-radius:100px; background:rgba(0,0,0,.45); color:#fff; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; opacity:0; transition:opacity .15s;}
-.card:hover .del{opacity:1;}
-.fab{position:fixed; right:20px; bottom:20px; width:56px; height:56px; border-radius:100px; border:none; background:var(--accent); color:#fff; font-size:26px; cursor:pointer; box-shadow:0 6px 18px rgba(0,0,0,.25); z-index:10; display:flex; align-items:center; justify-content:center;}
-.sheet-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:20; display:flex; align-items:flex-end; justify-content:center;}
-.sheet{background:var(--surface); width:100%; max-width:520px; border-radius:18px 18px 0 0; padding:20px 18px 20px; max-height:88vh; overflow-y:auto;}
-.sheet h2{font-size:19px; font-weight:600; margin-bottom:14px;}
-.field{display:flex; flex-direction:column; gap:5px; margin-bottom:12px;}
-.field label{font-size:11.5px; font-weight:600; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.04em;}
-.field input, .field textarea{font-family:inherit; font-size:14.5px; padding:9px 11px; border-radius:8px; border:1px solid var(--line); background:var(--bg); color:var(--ink); width:100%;}
+.card .price{font-family:'JetBrains Mono',monospace; font-weight:600; color:var(--gold-deep); font-size:13.5px;}
+@media (prefers-color-scheme: dark){ .card .price{color:var(--gold);} }
+.card .tagrow{display:flex; gap:6px; flex-wrap:wrap;}
+.card .actions{position:absolute; top:8px; right:8px; display:flex; gap:6px; opacity:0; transition:opacity .15s;}
+.card:hover .actions{opacity:1;}
+.icon-btn{width:28px; height:28px; border-radius:100px; background:rgba(0,0,0,.5); color:#fff; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px;}
+.icon-btn.danger:hover{background:var(--danger);}
+
+.fab{position:fixed; right:20px; bottom:20px; width:58px; height:58px; border-radius:100px; border:none; background:linear-gradient(155deg, var(--gold), var(--gold-deep)); color:#fff; font-size:28px; cursor:pointer; box-shadow:0 8px 22px rgba(120,90,20,.35); z-index:10; display:flex; align-items:center; justify-content:center;}
+
+/* ---- sheet (add/edit) ---- */
+.sheet-backdrop{position:fixed; inset:0; background:rgba(10,8,4,.55); z-index:20; display:flex; align-items:flex-end; justify-content:center;}
+.sheet{background:var(--surface); width:100%; max-width:540px; border-radius:20px 20px 0 0; padding:22px 20px 22px; max-height:90vh; overflow-y:auto; border-top:1px solid var(--line);}
+.sheet h2{font-size:20px; font-weight:600; margin-bottom:16px;}
+.field{display:flex; flex-direction:column; gap:5px; margin-bottom:13px;}
+.field label{font-size:11px; font-weight:600; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.05em;}
+.field input, .field textarea, .field select{font-family:inherit; font-size:14.5px; padding:10px 12px; border-radius:9px; border:1px solid var(--line); background:var(--bg); color:var(--ink); width:100%;}
 .field textarea{resize:vertical; min-height:56px;}
 .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-.upload-box{border:1.5px dashed var(--line); border-radius:12px; padding:14px; display:flex; align-items:center; gap:12px; cursor:pointer; position:relative;}
-.upload-box img{width:56px; height:56px; object-fit:cover; border-radius:8px;}
-.upload-box .ph{width:56px; height:56px; border-radius:8px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; color:var(--ink-dim); font-size:20px; flex-shrink:0;}
-.upload-box span{font-size:13px; color:var(--ink-dim);}
-.upload-box input[type=file]{position:absolute; inset:0; opacity:0; cursor:pointer;}
-.cat-picker{display:flex; gap:8px;}
-.cat-btn{flex:1; padding:10px 6px; border-radius:10px; border:1.5px solid var(--line); background:var(--bg); color:var(--ink-dim); font-size:12.5px; font-weight:600; cursor:pointer; text-align:center;}
+
+.photo-strip{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;}
+.photo-thumb{width:64px; height:64px; border-radius:9px; overflow:hidden; position:relative; flex-shrink:0;}
+.photo-thumb img{width:100%; height:100%; object-fit:cover;}
+.photo-thumb .rm{position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:100px; background:rgba(0,0,0,.6); color:#fff; border:none; font-size:11px; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1;}
+.add-photo{width:64px; height:64px; border-radius:9px; border:1.5px dashed var(--line); display:flex; align-items:center; justify-content:center; color:var(--ink-dim); font-size:20px; cursor:pointer; position:relative; flex-shrink:0;}
+.add-photo input{position:absolute; inset:0; opacity:0; cursor:pointer;}
+
+.cat-picker{display:flex; gap:6px; flex-wrap:wrap;}
+.cat-btn{flex:1; min-width:70px; padding:9px 6px; border-radius:10px; border:1.5px solid var(--line); background:var(--bg); color:var(--ink-dim); font-size:11.5px; font-weight:600; cursor:pointer; text-align:center; text-transform:uppercase; letter-spacing:.03em;}
 .cat-btn.active.rotation{border-color:var(--rotation); background:var(--rotation-bg); color:var(--rotation);}
+.cat-btn.active.pending{border-color:var(--pending); background:var(--pending-bg); color:var(--pending);}
 .cat-btn.active.ideas{border-color:var(--ideas); background:var(--ideas-bg); color:var(--ideas);}
 .cat-btn.active.planning{border-color:var(--planning); background:var(--planning-bg); color:var(--planning);}
-.sheet-actions{display:flex; gap:10px; margin-top:6px;}
+
+.sheet-actions{display:flex; gap:10px; margin-top:8px;}
 .btn{flex:1; padding:12px; border-radius:10px; border:none; font-size:14px; font-weight:600; cursor:pointer;}
-.btn.primary{background:var(--accent); color:#fff;}
+.btn.primary{background:linear-gradient(155deg, var(--gold), var(--gold-deep)); color:#fff;}
 .btn.ghost{background:var(--surface-2); color:var(--ink);}
+.btn.danger{background:var(--danger); color:#fff;}
 .btn:disabled{opacity:.5; cursor:default;}
-.toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--ink); color:var(--bg); padding:10px 16px; border-radius:100px; font-size:13px; z-index:40; opacity:0; pointer-events:none; transition:opacity .2s;}
+
+/* ---- spotlight ---- */
+.spot-backdrop{position:fixed; inset:0; background:rgba(6,4,2,.78); z-index:30; display:flex; align-items:center; justify-content:center; padding:16px;}
+.spot{background:var(--surface); width:100%; max-width:640px; max-height:92vh; overflow-y:auto; border-radius:18px; box-shadow:var(--shadow);}
+.spot .carousel{position:relative; width:100%; aspect-ratio:4/3; background:var(--surface-2); overflow:hidden;}
+.spot .carousel img{width:100%; height:100%; object-fit:cover; display:block;}
+.spot .carousel .nav{position:absolute; top:50%; transform:translateY(-50%); width:34px; height:34px; border-radius:100px; background:rgba(0,0,0,.45); color:#fff; border:none; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center;}
+.spot .carousel .nav.prev{left:10px;} .spot .carousel .nav.next{right:10px;}
+.spot .carousel .dots{position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:5px;}
+.spot .carousel .dots span{width:6px; height:6px; border-radius:100px; background:rgba(255,255,255,.5);}
+.spot .carousel .dots span.on{background:#fff;}
+.spot .close{position:absolute; top:10px; right:10px; width:32px; height:32px; border-radius:100px; background:rgba(0,0,0,.5); color:#fff; border:none; font-size:16px; cursor:pointer;}
+.spot .content{padding:20px;}
+.spot .top-row{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px;}
+.spot h2{font-size:22px; font-weight:600;}
+.spot .model{font-family:'JetBrains Mono',monospace; color:var(--ink-dim); font-size:12.5px; margin-bottom:10px;}
+.spot .price{font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--gold-deep); font-size:18px;}
+@media (prefers-color-scheme: dark){ .spot .price{color:var(--gold);} }
+.spot .specs-table{margin-top:14px; border-top:1px solid var(--line); padding-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:10px 16px;}
+.spot .specs-table div{font-size:12.5px;}
+.spot .specs-table .k{color:var(--ink-dim); text-transform:uppercase; letter-spacing:.04em; font-size:10.5px; margin-bottom:2px;}
+.spot .notes{margin-top:14px; font-size:13.5px; line-height:1.55; color:var(--ink-dim); border-top:1px solid var(--line); padding-top:14px;}
+.spot .spot-actions{display:flex; gap:10px; margin-top:18px;}
+
+.toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--ink); color:var(--bg); padding:10px 18px; border-radius:100px; font-size:13px; z-index:40; opacity:0; pointer-events:none; transition:opacity .2s;}
 .toast.show{opacity:1;}
 </style>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Jost:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap">
 </head>
 <body>
 
 <header>
-  <h1>Watcher</h1>
-  <p>Your rotation, your ideas, your plan.</p>
+  <div class="brand">
+    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><circle cx="24" cy="24" r="17"/><line x1="24" y1="24" x2="24" y2="14"/><line x1="24" y1="24" x2="31" y2="24"/><path d="M18 6h12M18 42h12"/></svg>
+    <h1>Watcher</h1>
+  </div>
+  <p>Your rotation, your ideas, your plan</p>
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" data-cat="rotation" aria-selected="true">Rotation <span class="n" id="n-rotation">0</span></button>
     <button class="tab" role="tab" data-cat="ideas" aria-selected="false">Ideas <span class="n" id="n-ideas">0</span></button>
-    <button class="tab" role="tab" data-cat="planning" aria-selected="false">Planning <span class="n" id="n-planning">0</span></button>
+    <button class="tab" role="tab" data-cat="planning" aria-selected="false">Wants <span class="n" id="n-planning">0</span></button>
   </div>
 </header>
 
-<main>
+<main id="main">
   <div id="grid" class="grid"></div>
   <div id="empty" class="empty" hidden>
     <strong>Nothing here yet</strong>
@@ -114,15 +175,12 @@ main{padding-top:18px;}
 
 <script>
 (function(){
-  // ---- CONFIG ----
-  // Point this at your PostgREST instance's URL for the "posts" table,
-  // e.g. "https://api.derekcyr.ca/posts" (same PostgREST service DG Ledger
-  // / dtrack use, or a dedicated one for Watcher).
   var API_URL = 'https://api-watcher.derekcyr.ca/posts';
+  var CAT_ORDER = ['rotation', 'ideas', 'planning'];
+  var CAT_LABEL = { rotation:'Rotation', ideas:'Ideas', planning:'Wants' };
+  var ROLE_LABEL = { dress:'Dress', daily:'Daily', tool:'Tool', beater:'Beater', statement:'Statement' };
 
-  
   var state = { cat: 'rotation', posts: [] };
-  var CAT_LABEL = { rotation:'Rotation', ideas:'Idea', planning:'Planning' };
 
   function toast(msg){
     var t = document.getElementById('toast');
@@ -141,13 +199,20 @@ main{padding-top:18px;}
     });
   }
 
+  function imagesOf(p){
+    if(Array.isArray(p.images) && p.images.length) return p.images;
+    if(p.image_data) return [p.image_data];
+    return [];
+  }
+
+  // ---- render grid ----
   function render(){
     var grid = document.getElementById('grid');
     var empty = document.getElementById('empty');
     var items = state.posts.filter(function(p){ return p.category === state.cat; })
       .sort(function(a,b){ return (b.created_at||0) - (a.created_at||0); });
 
-    ['rotation','ideas','planning'].forEach(function(c){
+    CAT_ORDER.forEach(function(c){
       document.getElementById('n-' + c).textContent =
         state.posts.filter(function(p){ return p.category === c; }).length;
     });
@@ -160,25 +225,29 @@ main{padding-top:18px;}
     empty.hidden = true;
 
     grid.innerHTML = items.map(function(p){
-      var photo = p.image_data
-        ? '<img src="' + p.image_data + '" alt="">'
+      var imgs = imagesOf(p);
+      var photo = imgs.length
+        ? '<img src="' + imgs[0] + '" alt="">' + (imgs.length > 1 ? '<span class="count">1/' + imgs.length + '</span>' : '')
         : watchIcon();
-      var specsLine = [p.movement, p.wr, p.crystal].filter(Boolean).join(' &middot; ');
       return '' +
         '<div class="card" data-id="' + p.id + '">' +
-          '<button class="del" data-del="' + p.id + '" title="Delete" aria-label="Delete">&times;</button>' +
+          '<div class="actions">' +
+            '<button class="icon-btn" data-edit="' + p.id + '" title="Edit" aria-label="Edit">&#9998;</button>' +
+            '<button class="icon-btn danger" data-del="' + p.id + '" title="Delete" aria-label="Delete">&times;</button>' +
+          '</div>' +
           '<div class="photo">' + photo + '</div>' +
           '<div class="body">' +
             '<div class="top-row">' +
               '<h3>' + escapeHtml(p.title || 'Untitled') + '</h3>' +
-              '<span class="badge ' + p.category + '">' + CAT_LABEL[p.category] + '</span>' +
             '</div>' +
             (p.model ? '<div class="model">' + escapeHtml(p.model) + '</div>' : '') +
             '<div class="dial-price">' +
               '<span>' + escapeHtml(p.dial || '') + '</span>' +
               (p.price ? '<span class="price">' + escapeHtml(p.price) + '</span>' : '') +
             '</div>' +
-            (specsLine || p.notes ? '<div class="specs">' + [specsLine, p.notes ? escapeHtml(p.notes) : ''].filter(Boolean).join('<br>') + '</div>' : '') +
+            '<div class="tagrow">' +
+              (p.role ? '<span class="badge role">' + (ROLE_LABEL[p.role] || escapeHtml(p.role)) + '</span>' : '') +
+            '</div>' +
           '</div>' +
         '</div>';
     }).join('');
@@ -186,96 +255,78 @@ main{padding-top:18px;}
 
   // ---- API ----
   async function fetchPosts(){
-    var res = await fetch(API_URL + '?order=created_at.desc', {
-      headers: { 'Accept': 'application/json' }
-    });
+    var res = await fetch(API_URL + '?order=created_at.desc', { headers:{ 'Accept':'application/json' } });
     if(!res.ok) throw new Error('fetch failed: ' + res.status);
     return res.json();
   }
-
-  async function createPost(post){
+  async function createPost(body){
     var res = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
-      },
-      body: JSON.stringify(post)
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Prefer':'return=representation' },
+      body: JSON.stringify(body)
     });
     if(!res.ok) throw new Error('create failed: ' + res.status);
     var rows = await res.json();
     return rows[0];
   }
-
-  async function deletePost(id){
+  async function updatePost(id, body){
     var res = await fetch(API_URL + '?id=eq.' + encodeURIComponent(id), {
-      method: 'DELETE'
+      method:'PATCH',
+      headers:{ 'Content-Type':'application/json', 'Prefer':'return=representation' },
+      body: JSON.stringify(body)
     });
+    if(!res.ok) throw new Error('update failed: ' + res.status);
+    var rows = await res.json();
+    return rows[0];
+  }
+  async function deletePost(id){
+    var res = await fetch(API_URL + '?id=eq.' + encodeURIComponent(id), { method:'DELETE' });
     if(!res.ok) throw new Error('delete failed: ' + res.status);
   }
-
   async function loadPosts(){
-    try{
-      state.posts = await fetchPosts();
-      render();
-    }catch(err){
-      toast('Could not reach the server');
-    }
+    try{ state.posts = await fetchPosts(); render(); }
+    catch(err){ toast('Could not reach the server'); }
   }
 
-  // ---- tabs ----
-  document.querySelectorAll('.tab').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      document.querySelectorAll('.tab').forEach(function(b){ b.setAttribute('aria-selected','false'); });
-      btn.setAttribute('aria-selected','true');
-      state.cat = btn.dataset.cat;
-      render();
+  // ---- tabs + swipe ----
+  function selectTab(cat){
+    state.cat = cat;
+    document.querySelectorAll('.tab').forEach(function(b){
+      b.setAttribute('aria-selected', b.dataset.cat === cat ? 'true' : 'false');
     });
+    render();
+  }
+  document.querySelectorAll('.tab').forEach(function(btn){
+    btn.addEventListener('click', function(){ selectTab(btn.dataset.cat); });
   });
 
-  // ---- add sheet ----
-  var sheetHtml =
-    '<div class="sheet-backdrop" id="backdrop">' +
-      '<div class="sheet">' +
-        '<h2>Add a watch</h2>' +
-        '<div class="field">' +
-          '<label>Photo</label>' +
-          '<div class="upload-box" id="uploadBox">' +
-            '<div class="ph" id="uploadPh">&#128247;</div>' +
-            '<span id="uploadLabel">Tap to choose a photo</span>' +
-            '<input type="file" accept="image/*" id="fileInput">' +
-          '</div>' +
-        '</div>' +
-        '<div class="field">' +
-          '<label>Category</label>' +
-          '<div class="cat-picker" id="catPicker">' +
-            '<button type="button" class="cat-btn rotation" data-cat="rotation">Rotation</button>' +
-            '<button type="button" class="cat-btn ideas" data-cat="ideas">Idea</button>' +
-            '<button type="button" class="cat-btn planning" data-cat="planning">Planning</button>' +
-          '</div>' +
-        '</div>' +
-        '<div class="field"><label>Watch title</label><input id="fTitle" placeholder="Seiko 5 Sports"></div>' +
-        '<div class="row2">' +
-          '<div class="field"><label>Model code</label><input id="fModel" placeholder="SRPD51K1"></div>' +
-          '<div class="field"><label>Dial colour</label><input id="fDial" placeholder="Blue"></div>' +
-        '</div>' +
-        '<div class="row2">' +
-          '<div class="field"><label>Price range</label><input id="fPrice" placeholder="$400-450 CAD"></div>' +
-          '<div class="field"><label>Case size</label><input id="fCase" placeholder="42.5mm"></div>' +
-        '</div>' +
-        '<div class="row2">' +
-          '<div class="field"><label>Movement</label><input id="fMovement" placeholder="4R36 automatic"></div>' +
-          '<div class="field"><label>Water resistance</label><input id="fWr" placeholder="100m"></div>' +
-        '</div>' +
-        '<div class="field"><label>Crystal</label><input id="fCrystal" placeholder="Hardlex / Sapphire"></div>' +
-        '<div class="field"><label>Notes</label><textarea id="fNotes" placeholder="Why you like it, where you saw it..."></textarea></div>' +
-        '<div class="sheet-actions">' +
-          '<button class="btn ghost" id="cancelBtn" type="button">Cancel</button>' +
-          '<button class="btn primary" id="saveBtn" type="button">Save watch</button>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
+  (function setupSwipe(){
+    var main = document.getElementById('main');
+    var startX = null, startY = null, tracking = false;
+    main.addEventListener('touchstart', function(e){
+      if(e.touches.length !== 1) return;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      tracking = true;
+    }, { passive:true });
+    main.addEventListener('touchmove', function(e){
+      if(!tracking || startX == null) return;
+    }, { passive:true });
+    main.addEventListener('touchend', function(e){
+      if(!tracking || startX == null) return;
+      tracking = false;
+      var endX = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientX : startX;
+      var endY = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientY : startY;
+      var dx = endX - startX, dy = endY - startY;
+      startX = null;
+      if(Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+      var idx = CAT_ORDER.indexOf(state.cat);
+      if(dx < 0 && idx < CAT_ORDER.length - 1) selectTab(CAT_ORDER[idx + 1]);
+      else if(dx > 0 && idx > 0) selectTab(CAT_ORDER[idx - 1]);
+    }, { passive:true });
+  })();
 
+  // ---- add / edit sheet ----
   function readFileAsDataUrl(file){
     return new Promise(function(resolve, reject){
       var reader = new FileReader();
@@ -285,20 +336,95 @@ main{padding-top:18px;}
     });
   }
 
-  function openSheet(){
-    var pendingImage = null;
+  function sheetMarkup(){
+    return '' +
+      '<div class="sheet-backdrop" id="backdrop">' +
+        '<div class="sheet">' +
+          '<h2 id="sheetTitle">Add a watch</h2>' +
+          '<div class="field">' +
+            '<label>Photos</label>' +
+            '<div class="photo-strip" id="photoStrip"></div>' +
+            '<div class="add-photo"><span>+</span><input type="file" accept="image/*" id="fileInput" multiple></div>' +
+          '</div>' +
+          '<div class="field">' +
+            '<label>Status</label>' +
+            '<div class="cat-picker" id="catPicker">' +
+              '<button type="button" class="cat-btn rotation" data-cat="rotation">Rotation</button>' +
+              '<button type="button" class="cat-btn ideas" data-cat="ideas">Ideas</button>' +
+              '<button type="button" class="cat-btn planning" data-cat="planning">Wants</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="field"><label>Watch title</label><input id="fTitle" placeholder="Seiko 5 Sports"></div>' +
+          '<div class="row2">' +
+            '<div class="field"><label>Model code</label><input id="fModel" placeholder="SRPD51K1"></div>' +
+            '<div class="field"><label>Dial colour</label><input id="fDial" placeholder="Blue"></div>' +
+          '</div>' +
+          '<div class="field">' +
+            '<label>Role</label>' +
+            '<select id="fRole">' +
+              '<option value="">None</option>' +
+              '<option value="dress">Dress</option>' +
+              '<option value="daily">Daily</option>' +
+              '<option value="tool">Tool</option>' +
+              '<option value="beater">Beater</option>' +
+              '<option value="statement">Statement</option>' +
+            '</select>' +
+          '</div>' +
+          '<div class="row2">' +
+            '<div class="field"><label>Price range</label><input id="fPrice" placeholder="$400-450 CAD"></div>' +
+            '<div class="field"><label>Case size</label><input id="fCase" placeholder="42.5mm"></div>' +
+          '</div>' +
+          '<div class="row2">' +
+            '<div class="field"><label>Movement</label><input id="fMovement" placeholder="4R36 automatic"></div>' +
+            '<div class="field"><label>Water resistance</label><input id="fWr" placeholder="100m"></div>' +
+          '</div>' +
+          '<div class="field"><label>Crystal</label><input id="fCrystal" placeholder="Hardlex / Sapphire"></div>' +
+          '<div class="field"><label>Notes</label><textarea id="fNotes" placeholder="Why you like it, where you saw it..."></textarea></div>' +
+          '<div class="sheet-actions">' +
+            '<button class="btn ghost" id="cancelBtn" type="button">Cancel</button>' +
+            '<button class="btn primary" id="saveBtn" type="button">Save watch</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function openSheet(existing){
+    var isEdit = !!existing;
+    var images = isEdit ? imagesOf(existing).slice() : [];
     var wrap = document.createElement('div');
-    wrap.innerHTML = sheetHtml;
+    wrap.innerHTML = sheetMarkup();
     document.body.appendChild(wrap.firstChild);
 
-    var backdrop = document.getElementById('backdrop');
-    var chosenCat = ['rotation','ideas','planning'].indexOf(state.cat) >= 0 ? state.cat : 'ideas';
-    setCat(chosenCat);
+    document.getElementById('sheetTitle').textContent = isEdit ? 'Edit watch' : 'Add a watch';
+    document.getElementById('saveBtn').textContent = isEdit ? 'Save changes' : 'Save watch';
 
-    document.getElementById('catPicker').addEventListener('click', function(e){
-      var b = e.target.closest('.cat-btn');
-      if(!b) return;
-      setCat(b.dataset.cat);
+    var backdrop = document.getElementById('backdrop');
+    var chosenCat = isEdit ? existing.category : (CAT_ORDER.indexOf(state.cat) >= 0 ? state.cat : 'ideas');
+
+    function renderThumbs(){
+      var strip = document.getElementById('photoStrip');
+      strip.innerHTML = images.map(function(src, i){
+        return '<div class="photo-thumb"><img src="' + src + '"><button type="button" class="rm" data-i="' + i + '">&times;</button></div>';
+      }).join('');
+    }
+    renderThumbs();
+    document.getElementById('photoStrip').addEventListener('click', function(e){
+      var rm = e.target.closest('.rm');
+      if(!rm) return;
+      images.splice(Number(rm.dataset.i), 1);
+      renderThumbs();
+    });
+
+    document.getElementById('fileInput').addEventListener('change', async function(e){
+      var files = Array.from(e.target.files || []);
+      for(var i = 0; i < files.length; i++){
+        var file = files[i];
+        if(file.size > 4.5 * 1024 * 1024){ toast(file.name + ' is too large (max ~4MB)'); continue; }
+        try{ images.push(await readFileAsDataUrl(file)); }
+        catch(err){ toast('Could not read ' + file.name); }
+      }
+      renderThumbs();
+      e.target.value = '';
     });
 
     function setCat(c){
@@ -307,47 +433,40 @@ main{padding-top:18px;}
         b.classList.toggle('active', b.dataset.cat === c);
       });
     }
-
-    document.getElementById('fileInput').addEventListener('change', async function(e){
-      var file = e.target.files && e.target.files[0];
-      if(!file) return;
-      var label = document.getElementById('uploadLabel');
-      var ph = document.getElementById('uploadPh');
-      if(file.size > 4.5 * 1024 * 1024){
-        label.textContent = 'Photo too large, use one under ~4MB';
-        return;
-      }
-      try{
-        var dataUrl = await readFileAsDataUrl(file);
-        pendingImage = dataUrl;
-        var img = document.createElement('img');
-        img.src = dataUrl;
-        if(ph) ph.replaceWith(img);
-        label.textContent = file.name;
-      }catch(err){
-        label.textContent = 'Could not read that file';
-      }
+    setCat(chosenCat);
+    document.getElementById('catPicker').addEventListener('click', function(e){
+      var b = e.target.closest('.cat-btn');
+      if(b) setCat(b.dataset.cat);
     });
+
+    if(isEdit){
+      document.getElementById('fTitle').value = existing.title || '';
+      document.getElementById('fModel').value = existing.model || '';
+      document.getElementById('fDial').value = existing.dial || '';
+      document.getElementById('fRole').value = existing.role || '';
+      document.getElementById('fPrice').value = existing.price || '';
+      document.getElementById('fCase').value = existing.case_size || '';
+      document.getElementById('fMovement').value = existing.movement || '';
+      document.getElementById('fWr').value = existing.wr || '';
+      document.getElementById('fCrystal').value = existing.crystal || '';
+      document.getElementById('fNotes').value = existing.notes || '';
+    }
 
     document.getElementById('cancelBtn').addEventListener('click', closeSheet);
-    backdrop.addEventListener('click', function(e){
-      if(e.target === backdrop) closeSheet();
-    });
+    backdrop.addEventListener('click', function(e){ if(e.target === backdrop) closeSheet(); });
 
     document.getElementById('saveBtn').addEventListener('click', async function(){
       var title = document.getElementById('fTitle').value.trim();
-      if(!title){
-        document.getElementById('fTitle').focus();
-        return;
-      }
+      if(!title){ document.getElementById('fTitle').focus(); return; }
       var saveBtn = document.getElementById('saveBtn');
       saveBtn.disabled = true;
       saveBtn.textContent = 'Saving...';
 
-      var post = {
+      var body = {
         title: title,
         model: document.getElementById('fModel').value.trim(),
         dial: document.getElementById('fDial').value.trim(),
+        role: document.getElementById('fRole').value,
         price: document.getElementById('fPrice').value.trim(),
         case_size: document.getElementById('fCase').value.trim(),
         movement: document.getElementById('fMovement').value.trim(),
@@ -355,23 +474,26 @@ main{padding-top:18px;}
         crystal: document.getElementById('fCrystal').value.trim(),
         notes: document.getElementById('fNotes').value.trim(),
         category: chosenCat,
-        image_data: pendingImage,
-        created_at: Date.now()
+        images: images
       };
+      if(!isEdit) body.created_at = Date.now();
 
       try{
-        var saved = await createPost(post);
-        state.posts.push(saved);
-        state.cat = chosenCat;
-        document.querySelectorAll('.tab').forEach(function(b){
-          b.setAttribute('aria-selected', b.dataset.cat === chosenCat ? 'true' : 'false');
-        });
-        render();
-        toast('Watch saved');
+        var saved;
+        if(isEdit){
+          saved = await updatePost(existing.id, body);
+          state.posts = state.posts.map(function(p){ return p.id === saved.id ? saved : p; });
+        } else {
+          saved = await createPost(body);
+          state.posts.push(saved);
+        }
+        selectTab(chosenCat);
+        toast(isEdit ? 'Changes saved' : 'Watch saved');
         closeSheet();
+        closeSpotlight();
       }catch(err){
         saveBtn.disabled = false;
-        saveBtn.textContent = 'Save watch';
+        saveBtn.textContent = isEdit ? 'Save changes' : 'Save watch';
         toast('Could not save, try again');
       }
     });
@@ -382,23 +504,132 @@ main{padding-top:18px;}
     if(b) b.remove();
   }
 
-  document.getElementById('fabAdd').addEventListener('click', openSheet);
+  document.getElementById('fabAdd').addEventListener('click', function(){ openSheet(null); });
+
+  // ---- spotlight ----
+  var spotState = { post:null, idx:0 };
+
+  function spotMarkup(post){
+    var imgs = imagesOf(post);
+    var carouselImg = imgs.length ? '<img src="' + imgs[0] + '" id="spotImg">' : '';
+    var dots = imgs.length > 1
+      ? '<div class="dots">' + imgs.map(function(_, i){ return '<span class="' + (i === 0 ? 'on' : '') + '"></span>'; }).join('') + '</div>'
+      : '';
+    var navs = imgs.length > 1
+      ? '<button class="nav prev" id="spotPrev">&#8249;</button><button class="nav next" id="spotNext">&#8250;</button>'
+      : '';
+    var specs = [
+      ['Case size', post.case_size], ['Movement', post.movement], ['Water resist.', post.wr],
+      ['Crystal', post.crystal], ['Dial', post.dial], ['Role', ROLE_LABEL[post.role] || post.role]
+    ].filter(function(pair){ return pair[1]; });
+
+    return '' +
+      '<div class="spot-backdrop" id="spotBackdrop">' +
+        '<div class="spot">' +
+          '<div class="carousel">' +
+            (imgs.length ? carouselImg : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">' + watchIcon() + '</div>') +
+            navs + dots +
+            '<button class="close" id="spotClose">&times;</button>' +
+          '</div>' +
+          '<div class="content">' +
+            '<div class="top-row">' +
+              '<div><h2>' + escapeHtml(post.title || 'Untitled') + '</h2><div class="model">' + escapeHtml(post.model || '') + '</div></div>' +
+              (post.price ? '<div class="price">' + escapeHtml(post.price) + '</div>' : '') +
+            '</div>' +
+            (specs.length ? '<div class="specs-table">' + specs.map(function(pair){
+              return '<div><div class="k">' + escapeHtml(pair[0]) + '</div><div>' + escapeHtml(pair[1]) + '</div></div>';
+            }).join('') + '</div>' : '') +
+            (post.notes ? '<div class="notes">' + escapeHtml(post.notes) + '</div>' : '') +
+            '<div class="spot-actions">' +
+              '<button class="btn ghost" id="spotEdit" type="button">Edit</button>' +
+              '<button class="btn danger" id="spotDelete" type="button">Delete</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function openSpotlight(post){
+    spotState.post = post;
+    spotState.idx = 0;
+    var wrap = document.createElement('div');
+    wrap.innerHTML = spotMarkup(post);
+    document.body.appendChild(wrap.firstChild);
+
+    var imgs = imagesOf(post);
+    function showIdx(i){
+      spotState.idx = i;
+      var img = document.getElementById('spotImg');
+      if(img) img.src = imgs[i];
+      document.querySelectorAll('.spot .dots span').forEach(function(d, di){
+        d.classList.toggle('on', di === i);
+      });
+    }
+    var prevBtn = document.getElementById('spotPrev');
+    var nextBtn = document.getElementById('spotNext');
+    if(prevBtn) prevBtn.addEventListener('click', function(){ showIdx((spotState.idx - 1 + imgs.length) % imgs.length); });
+    if(nextBtn) nextBtn.addEventListener('click', function(){ showIdx((spotState.idx + 1) % imgs.length); });
+
+    var carousel = document.querySelector('.spot .carousel');
+    if(carousel && imgs.length > 1){
+      var sx = null;
+      carousel.addEventListener('touchstart', function(e){ sx = e.touches[0].clientX; }, { passive:true });
+      carousel.addEventListener('touchend', function(e){
+        if(sx == null) return;
+        var dx = e.changedTouches[0].clientX - sx;
+        sx = null;
+        if(Math.abs(dx) < 40) return;
+        if(dx < 0) showIdx((spotState.idx + 1) % imgs.length);
+        else showIdx((spotState.idx - 1 + imgs.length) % imgs.length);
+      }, { passive:true });
+    }
+
+    document.getElementById('spotClose').addEventListener('click', closeSpotlight);
+    document.getElementById('spotBackdrop').addEventListener('click', function(e){
+      if(e.target.id === 'spotBackdrop') closeSpotlight();
+    });
+    document.getElementById('spotEdit').addEventListener('click', function(){
+      closeSpotlight();
+      openSheet(post);
+    });
+    document.getElementById('spotDelete').addEventListener('click', async function(){
+      if(!confirm('Delete "' + (post.title || 'this watch') + '"?')) return;
+      try{
+        await deletePost(post.id);
+        state.posts = state.posts.filter(function(p){ return p.id !== post.id; });
+        closeSpotlight();
+        render();
+        toast('Deleted');
+      }catch(err){ toast('Could not delete'); }
+    });
+  }
+
+  function closeSpotlight(){
+    var b = document.getElementById('spotBackdrop');
+    if(b) b.remove();
+  }
 
   document.getElementById('grid').addEventListener('click', async function(e){
+    var editBtn = e.target.closest('[data-edit]');
     var delBtn = e.target.closest('[data-del]');
-    if(!delBtn) return;
-    var id = delBtn.dataset.del;
+    var card = e.target.closest('.card');
+    if(!card) return;
+    var id = card.dataset.id;
     var post = state.posts.find(function(p){ return String(p.id) === String(id); });
     if(!post) return;
-    if(!confirm('Delete "' + (post.title || 'this watch') + '"?')) return;
-    try{
-      await deletePost(id);
-      state.posts = state.posts.filter(function(p){ return String(p.id) !== String(id); });
-      render();
-      toast('Deleted');
-    }catch(err){
-      toast('Could not delete');
+
+    if(editBtn){ openSheet(post); return; }
+    if(delBtn){
+      if(!confirm('Delete "' + (post.title || 'this watch') + '"?')) return;
+      try{
+        await deletePost(id);
+        state.posts = state.posts.filter(function(p){ return String(p.id) !== String(id); });
+        render();
+        toast('Deleted');
+      }catch(err){ toast('Could not delete'); }
+      return;
     }
+    openSpotlight(post);
   });
 
   render();
