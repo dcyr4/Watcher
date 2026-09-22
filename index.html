@@ -1,0 +1,484 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Watcher</title>
+<style>
+:root{
+  --bg:#f6f4ef;
+  --surface:#ffffff;
+  --surface-2:#efece3;
+  --ink:#1c1a16;
+  --ink-dim:#6b6558;
+  --line:#e1ddd0;
+  --accent:#8a5a34;
+  --accent-2:#3d5a4c;
+  --rotation:#3d5a4c;
+  --rotation-bg:#e5ece7;
+  --ideas:#a5842f;
+  --ideas-bg:#f3ead4;
+  --planning:#8a5a34;
+  --planning-bg:#f2e6d8;
+  --danger:#a3402f;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#171613; --surface:#211f1a; --surface-2:#28261f;
+    --ink:#efece2; --ink-dim:#a39c8a; --line:#3a3628;
+    --accent:#d19a63; --accent-2:#7fae97;
+    --rotation:#7fae97; --rotation-bg:#243128;
+    --ideas:#d1ab54; --ideas-bg:#332c1c;
+    --planning:#d19a63; --planning-bg:#332720;
+    --danger:#e08a76;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#171613; --surface:#211f1a; --surface-2:#28261f;
+  --ink:#efece2; --ink-dim:#a39c8a; --line:#3a3628;
+  --accent:#d19a63; --accent-2:#7fae97;
+  --rotation:#7fae97; --rotation-bg:#243128;
+  --ideas:#d1ab54; --ideas-bg:#332c1c;
+  --planning:#d19a63; --planning-bg:#332720;
+  --danger:#e08a76;
+}
+
+*{box-sizing:border-box;}
+html,body{background:var(--bg); color:var(--ink); margin:0; height:100%;}
+body{
+  font-family:'Inter Tight','Segoe UI',system-ui,sans-serif;
+  padding-inline:16px;
+  padding-block:0 100px;
+  max-width:900px;
+  margin:0 auto;
+}
+h1,h2,h3{font-family:'Fraunces','Georgia',serif; text-wrap:balance; margin:0;}
+button{font-family:inherit;}
+
+header{
+  position:sticky; top:0; z-index:5;
+  background:var(--bg);
+  padding-top:calc(20px + env(safe-area-inset-top,0px));
+  padding-bottom:12px;
+}
+header h1{font-size:26px; font-weight:600; letter-spacing:-.01em;}
+header p{color:var(--ink-dim); font-size:13px; margin:4px 0 0;}
+
+.tabs{
+  display:flex; gap:6px; margin-top:16px; border-bottom:1px solid var(--line);
+}
+.tab{
+  appearance:none; border:none; background:none; cursor:pointer;
+  padding:10px 14px; font-size:13.5px; font-weight:600; color:var(--ink-dim);
+  border-bottom:2px solid transparent; margin-bottom:-1px;
+  display:flex; align-items:center; gap:6px;
+}
+.tab[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--accent);}
+.tab .n{
+  font-size:11px; background:var(--surface-2); color:var(--ink-dim);
+  padding:1px 6px; border-radius:100px; font-variant-numeric:tabular-nums;
+}
+
+main{padding-top:18px;}
+.empty{
+  text-align:center; padding:48px 16px; color:var(--ink-dim);
+  border:1px dashed var(--line); border-radius:14px; font-size:14px;
+}
+.empty strong{display:block; color:var(--ink); font-size:16px; margin-bottom:6px; font-family:'Fraunces',serif; font-weight:600;}
+
+.grid{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px;
+}
+
+.card{
+  background:var(--surface); border:1px solid var(--line); border-radius:14px;
+  overflow:hidden; display:flex; flex-direction:column; position:relative;
+}
+.card .photo{
+  width:100%; aspect-ratio:4/3; background:var(--surface-2);
+  display:flex; align-items:center; justify-content:center; overflow:hidden;
+}
+.card .photo img{width:100%; height:100%; object-fit:cover; display:block;}
+.card .photo svg{width:40px; height:40px; opacity:.35;}
+.card .body{padding:13px; display:flex; flex-direction:column; gap:8px; flex:1;}
+.card .top-row{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
+.badge{
+  font-size:10px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+  padding:3px 8px; border-radius:100px; white-space:nowrap;
+}
+.badge.rotation{background:var(--rotation-bg); color:var(--rotation);}
+.badge.ideas{background:var(--ideas-bg); color:var(--ideas);}
+.badge.planning{background:var(--planning-bg); color:var(--planning);}
+
+.card h3{font-size:15.5px; font-weight:600; line-height:1.25;}
+.card .model{font-size:11.5px; color:var(--ink-dim); font-family:'JetBrains Mono',monospace;}
+.card .dial-price{display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--ink-dim);}
+.card .price{font-family:'JetBrains Mono',monospace; font-weight:600; color:var(--accent); font-size:13.5px;}
+.card .specs{font-size:12px; color:var(--ink-dim); line-height:1.5; border-top:1px solid var(--line); padding-top:8px;}
+.card .del{
+  position:absolute; top:8px; right:8px; width:26px; height:26px; border-radius:100px;
+  background:rgba(0,0,0,.45); color:#fff; border:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; font-size:14px; line-height:1;
+  opacity:0; transition:opacity .15s;
+}
+.card:hover .del{opacity:1;}
+
+.fab{
+  position:fixed; right:20px; bottom:calc(20px + env(safe-area-inset-bottom,0px));
+  width:56px; height:56px; border-radius:100px; border:none;
+  background:var(--accent); color:#fff; font-size:26px; cursor:pointer;
+  box-shadow:0 6px 18px rgba(0,0,0,.25); z-index:10;
+  display:flex; align-items:center; justify-content:center;
+}
+
+.sheet-backdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:20;
+  display:flex; align-items:flex-end; justify-content:center;
+}
+.sheet{
+  background:var(--surface); width:100%; max-width:520px; border-radius:18px 18px 0 0;
+  padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px));
+  max-height:88vh; overflow-y:auto;
+}
+.sheet h2{font-size:19px; font-weight:600; margin-bottom:14px;}
+.field{display:flex; flex-direction:column; gap:5px; margin-bottom:12px;}
+.field label{font-size:11.5px; font-weight:600; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.04em;}
+.field input, .field select, .field textarea{
+  font-family:inherit; font-size:14.5px; padding:9px 11px; border-radius:8px;
+  border:1px solid var(--line); background:var(--bg); color:var(--ink); width:100%;
+}
+.field textarea{resize:vertical; min-height:56px;}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+
+.upload-box{
+  border:1.5px dashed var(--line); border-radius:12px; padding:14px;
+  display:flex; align-items:center; gap:12px; cursor:pointer; position:relative;
+}
+.upload-box img{width:56px; height:56px; object-fit:cover; border-radius:8px;}
+.upload-box .ph{
+  width:56px; height:56px; border-radius:8px; background:var(--surface-2);
+  display:flex; align-items:center; justify-content:center; color:var(--ink-dim); font-size:20px; flex-shrink:0;
+}
+.upload-box span{font-size:13px; color:var(--ink-dim);}
+.upload-box input[type=file]{position:absolute; inset:0; opacity:0; cursor:pointer;}
+
+.cat-picker{display:flex; gap:8px;}
+.cat-btn{
+  flex:1; padding:10px 6px; border-radius:10px; border:1.5px solid var(--line);
+  background:var(--bg); color:var(--ink-dim); font-size:12.5px; font-weight:600;
+  cursor:pointer; text-align:center;
+}
+.cat-btn.active.rotation{border-color:var(--rotation); background:var(--rotation-bg); color:var(--rotation);}
+.cat-btn.active.ideas{border-color:var(--ideas); background:var(--ideas-bg); color:var(--ideas);}
+.cat-btn.active.planning{border-color:var(--planning); background:var(--planning-bg); color:var(--planning);}
+
+.sheet-actions{display:flex; gap:10px; margin-top:6px;}
+.btn{
+  flex:1; padding:12px; border-radius:10px; border:none; font-size:14px; font-weight:600; cursor:pointer;
+}
+.btn.primary{background:var(--accent); color:#fff;}
+.btn.ghost{background:var(--surface-2); color:var(--ink);}
+.btn:disabled{opacity:.5; cursor:default;}
+
+.toast{
+  position:fixed; left:50%; bottom:calc(24px + env(safe-area-inset-bottom,0px));
+  transform:translateX(-50%); background:var(--ink); color:var(--bg);
+  padding:10px 16px; border-radius:100px; font-size:13px; z-index:40;
+  opacity:0; pointer-events:none; transition:opacity .2s;
+}
+.toast.show{opacity:1;}
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+
+<header>
+  <h1>Watcher</h1>
+  <p>Your rotation, your ideas, your plan.</p>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-cat="rotation" aria-selected="true">Rotation <span class="n" id="n-rotation">0</span></button>
+    <button class="tab" role="tab" data-cat="ideas" aria-selected="false">Ideas <span class="n" id="n-ideas">0</span></button>
+    <button class="tab" role="tab" data-cat="planning" aria-selected="false">Planning <span class="n" id="n-planning">0</span></button>
+  </div>
+</header>
+
+<main>
+  <div id="grid" class="grid"></div>
+  <div id="empty" class="empty" hidden>
+    <strong>Nothing here yet</strong>
+    Tap the + button to add a watch.
+  </div>
+</main>
+
+<button class="fab" id="fabAdd" aria-label="Add watch">+</button>
+
+<div id="toast" class="toast"></div>
+
+<script>
+(function(){
+  var state = { cat: 'rotation', posts: [], db: null, assets: null, pendingImage: null };
+
+  var CAT_LABEL = { rotation:'Rotation', ideas:'Idea', planning:'Planning' };
+
+  function toast(msg){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 2200);
+  }
+
+  function watchIcon(){
+    return '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><circle cx="24" cy="24" r="16"/><line x1="24" y1="24" x2="24" y2="15"/><line x1="24" y1="24" x2="30" y2="24"/><path d="M19 8h10M19 40h10"/></svg>';
+  }
+
+  function render(){
+    var grid = document.getElementById('grid');
+    var empty = document.getElementById('empty');
+    var items = state.posts.filter(function(p){ return p.category === state.cat; })
+      .sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
+
+    ['rotation','ideas','planning'].forEach(function(c){
+      document.getElementById('n-' + c).textContent =
+        state.posts.filter(function(p){ return p.category === c; }).length;
+    });
+
+    if(!items.length){
+      grid.innerHTML = '';
+      empty.hidden = false;
+      return;
+    }
+    empty.hidden = true;
+
+    grid.innerHTML = items.map(function(p){
+      var photo = p.imageUrl
+        ? '<img src="' + p.imageUrl + '" alt="">'
+        : watchIcon();
+      var specsLine = [p.movement, p.wr, p.crystal].filter(Boolean).join(' &middot; ');
+      return '' +
+        '<div class="card" data-id="' + p.id + '">' +
+          '<button class="del" data-del="' + p.id + '" title="Delete" aria-label="Delete">&times;</button>' +
+          '<div class="photo">' + photo + '</div>' +
+          '<div class="body">' +
+            '<div class="top-row">' +
+              '<h3>' + escapeHtml(p.title || 'Untitled') + '</h3>' +
+              '<span class="badge ' + p.category + '">' + CAT_LABEL[p.category] + '</span>' +
+            '</div>' +
+            (p.model ? '<div class="model">' + escapeHtml(p.model) + '</div>' : '') +
+            '<div class="dial-price">' +
+              '<span>' + escapeHtml(p.dial || '') + '</span>' +
+              (p.price ? '<span class="price">' + escapeHtml(p.price) + '</span>' : '') +
+            '</div>' +
+            (specsLine || p.notes ? '<div class="specs">' + [specsLine, p.notes ? escapeHtml(p.notes) : ''].filter(Boolean).join('<br>') + '</div>' : '') +
+          '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  // ---- tabs ----
+  document.querySelectorAll('.tab').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.tab').forEach(function(b){ b.setAttribute('aria-selected','false'); });
+      btn.setAttribute('aria-selected','true');
+      state.cat = btn.dataset.cat;
+      render();
+    });
+  });
+
+  // ---- sheet (add form) ----
+  var sheetHtml =
+    '<div class="sheet-backdrop" id="backdrop">' +
+      '<div class="sheet">' +
+        '<h2>Add a watch</h2>' +
+        '<div class="field">' +
+          '<label>Photo</label>' +
+          '<div class="upload-box" id="uploadBox">' +
+            '<div class="ph" id="uploadPh">&#128247;</div>' +
+            '<span id="uploadLabel">Tap to choose a photo</span>' +
+            '<input type="file" accept="image/*" id="fileInput">' +
+          '</div>' +
+        '</div>' +
+        '<div class="field">' +
+          '<label>Category</label>' +
+          '<div class="cat-picker" id="catPicker">' +
+            '<button type="button" class="cat-btn rotation" data-cat="rotation">Rotation</button>' +
+            '<button type="button" class="cat-btn ideas" data-cat="ideas">Idea</button>' +
+            '<button type="button" class="cat-btn planning" data-cat="planning">Planning</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="field"><label>Watch title</label><input id="fTitle" placeholder="Seiko 5 Sports"></div>' +
+        '<div class="row2">' +
+          '<div class="field"><label>Model code</label><input id="fModel" placeholder="SRPD51K1"></div>' +
+          '<div class="field"><label>Dial colour</label><input id="fDial" placeholder="Blue"></div>' +
+        '</div>' +
+        '<div class="row2">' +
+          '<div class="field"><label>Price range</label><input id="fPrice" placeholder="$400-450 CAD"></div>' +
+          '<div class="field"><label>Case size</label><input id="fCase" placeholder="42.5mm"></div>' +
+        '</div>' +
+        '<div class="row2">' +
+          '<div class="field"><label>Movement</label><input id="fMovement" placeholder="4R36 automatic"></div>' +
+          '<div class="field"><label>Water resistance</label><input id="fWr" placeholder="100m"></div>' +
+        '</div>' +
+        '<div class="field"><label>Crystal</label><input id="fCrystal" placeholder="Hardlex / Sapphire"></div>' +
+        '<div class="field"><label>Notes</label><textarea id="fNotes" placeholder="Why you like it, where you saw it..."></textarea></div>' +
+        '<div class="sheet-actions">' +
+          '<button class="btn ghost" id="cancelBtn" type="button">Cancel</button>' +
+          '<button class="btn primary" id="saveBtn" type="button">Save watch</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  function openSheet(){
+    state.pendingImage = null;
+    var wrap = document.createElement('div');
+    wrap.innerHTML = sheetHtml;
+    document.body.appendChild(wrap.firstChild);
+
+    var backdrop = document.getElementById('backdrop');
+    var chosenCat = state.cat === 'rotation' || state.cat === 'ideas' || state.cat === 'planning' ? state.cat : 'ideas';
+    setCat(chosenCat);
+
+    document.getElementById('catPicker').addEventListener('click', function(e){
+      var b = e.target.closest('.cat-btn');
+      if(!b) return;
+      setCat(b.dataset.cat);
+    });
+
+    function setCat(c){
+      chosenCat = c;
+      document.querySelectorAll('.cat-btn').forEach(function(b){
+        b.classList.toggle('active', b.dataset.cat === c);
+      });
+    }
+
+    document.getElementById('fileInput').addEventListener('change', async function(e){
+      var file = e.target.files && e.target.files[0];
+      if(!file) return;
+      var label = document.getElementById('uploadLabel');
+      var ph = document.getElementById('uploadPh');
+      label.textContent = 'Uploading...';
+      try{
+        if(!state.assets) throw new Error('no-assets');
+        var res = await state.assets.upload(file);
+        state.pendingImage = res;
+        ph.outerHTML = '<img src="' + res.url + '" alt="">';
+        label.textContent = file.name;
+      }catch(err){
+        label.textContent = 'Upload failed, try a smaller image';
+      }
+    });
+
+    document.getElementById('cancelBtn').addEventListener('click', closeSheet);
+    backdrop.addEventListener('click', function(e){
+      if(e.target === backdrop) closeSheet();
+    });
+
+    document.getElementById('saveBtn').addEventListener('click', async function(){
+      var title = document.getElementById('fTitle').value.trim();
+      if(!title){
+        document.getElementById('fTitle').focus();
+        return;
+      }
+      var saveBtn = document.getElementById('saveBtn');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+
+      var post = {
+        title: title,
+        model: document.getElementById('fModel').value.trim(),
+        dial: document.getElementById('fDial').value.trim(),
+        price: document.getElementById('fPrice').value.trim(),
+        caseSize: document.getElementById('fCase').value.trim(),
+        movement: document.getElementById('fMovement').value.trim(),
+        wr: document.getElementById('fWr').value.trim(),
+        crystal: document.getElementById('fCrystal').value.trim(),
+        notes: document.getElementById('fNotes').value.trim(),
+        category: chosenCat,
+        imageId: state.pendingImage ? state.pendingImage.id : null,
+        imageUrl: state.pendingImage ? state.pendingImage.url : null,
+        createdAt: Date.now()
+      };
+
+      try{
+        if(state.db){
+          var ref = await state.db.collection('posts').add(post);
+          post.id = ref.id;
+        } else {
+          post.id = 'local-' + Date.now();
+        }
+        state.posts.push(post);
+        state.cat = chosenCat;
+        document.querySelectorAll('.tab').forEach(function(b){
+          b.setAttribute('aria-selected', b.dataset.cat === chosenCat ? 'true' : 'false');
+        });
+        render();
+        toast('Watch saved');
+        closeSheet();
+      }catch(err){
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save watch';
+        toast('Could not save, try again');
+      }
+    });
+  }
+
+  function closeSheet(){
+    var b = document.getElementById('backdrop');
+    if(b) b.remove();
+  }
+
+  document.getElementById('fabAdd').addEventListener('click', openSheet);
+
+  document.getElementById('grid').addEventListener('click', async function(e){
+    var delBtn = e.target.closest('[data-del]');
+    if(!delBtn) return;
+    var id = delBtn.dataset.del;
+    var post = state.posts.find(function(p){ return p.id === id; });
+    if(!post) return;
+    if(!confirm('Delete "' + (post.title || 'this watch') + '"?')) return;
+    try{
+      if(state.db && String(id).indexOf('local-') !== 0){
+        await state.db.collection('posts').doc(id).delete();
+      }
+      if(post.imageId && state.assets){
+        state.assets.delete(post.imageId).catch(function(){});
+      }
+      state.posts = state.posts.filter(function(p){ return p.id !== id; });
+      render();
+      toast('Deleted');
+    }catch(err){
+      toast('Could not delete');
+    }
+  });
+
+  // ---- boot ----
+  async function boot(){
+    render();
+    try{
+      state.db = await window.claude.use('db');
+      state.assets = await window.claude.use('assets');
+    }catch(e){ /* capabilities unavailable, local-only mode */ }
+
+    if(state.db){
+      state.db.collection('posts').onSnapshot(function(snap){
+        state.posts = snap.docs.map(function(d){
+          var data = d.data() || {};
+          return Object.assign({ id: d.id }, data);
+        });
+        render();
+      }, function(err){
+        toast('Sync unavailable, working locally');
+      });
+    }
+  }
+
+  if(window.claude && window.claude.hot){
+    var start = function(){ boot(); };
+    window.claude.hot.ready ? window.claude.hot.ready(start) : start();
+  } else {
+    boot();
+  }
+})();
+</script>
+
+</body></html>
