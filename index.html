@@ -65,6 +65,15 @@ header{position:sticky; top:0; z-index:5; background:var(--bg); padding-top:22px
 header .brand{display:flex; align-items:baseline; gap:10px;}
 header h1{font-size:28px; font-weight:600; letter-spacing:.01em;}
 header .brand svg{width:22px; height:22px; color:var(--gold); flex-shrink:0;}
+.refresh-btn{margin-left:auto; width:34px; height:34px; border-radius:100px; border:1px solid var(--line); background:var(--surface); color:var(--ink-dim); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; touch-action:manipulation;}
+.refresh-btn svg{width:16px; height:16px;}
+.refresh-btn.spin svg{animation:spin .7s linear infinite;}
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+.ptr{display:flex; align-items:center; justify-content:center; height:0; overflow:hidden; color:var(--gold-deep); transition:height .15s;}
+@media (prefers-color-scheme: dark){ .ptr{color:var(--gold);} }
+.ptr svg{width:20px; height:20px;}
+.ptr.spin svg{animation:spin .7s linear infinite;}
 header p{color:var(--ink-dim); font-size:12.5px; margin:3px 0 0; letter-spacing:.03em; text-transform:uppercase;}
 
 .tabs{display:flex; gap:2px; margin-top:18px; border-bottom:1px solid var(--line); overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;}
@@ -181,6 +190,9 @@ main{padding-top:20px; touch-action:pan-y;}
   <div class="brand">
     <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><circle cx="24" cy="24" r="17"/><line x1="24" y1="24" x2="24" y2="14"/><line x1="24" y1="24" x2="31" y2="24"/><path d="M18 6h12M18 42h12"/></svg>
     <h1>Watcher</h1>
+    <button class="refresh-btn" id="refreshBtn" type="button" aria-label="Refresh">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.34 6.36"/><path d="M20 5v6h-6"/></svg>
+    </button>
   </div>
   <p>Your rotation, your ideas, your plan</p>
   <div class="tabs" role="tablist">
@@ -198,6 +210,7 @@ main{padding-top:20px; touch-action:pan-y;}
 </header>
 
 <main id="main">
+  <div class="ptr" id="ptr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.34 6.36"/><path d="M20 5v6h-6"/></svg></div>
   <div id="grid" class="grid"></div>
   <div id="empty" class="empty" hidden>
     <strong>Nothing here yet</strong>
@@ -372,10 +385,21 @@ main{padding-top:20px; touch-action:pan-y;}
     var res = await fetch(API_URL + '?id=eq.' + encodeURIComponent(id), { method:'DELETE' });
     if(!res.ok) throw new Error('delete failed: ' + res.status);
   }
-  async function loadPosts(){
-    try{ state.posts = await fetchPosts(); render(); }
-    catch(err){ toast('Could not reach the server'); }
+  async function loadPosts(opts){
+    var silent = opts && opts.silent;
+    var btn = document.getElementById('refreshBtn');
+    if(btn) btn.classList.add('spin');
+    try{
+      state.posts = await fetchPosts();
+      render();
+      if(!silent) toast('Updated');
+    }catch(err){
+      toast('Could not reach the server');
+    }finally{
+      if(btn) btn.classList.remove('spin');
+    }
   }
+  document.getElementById('refreshBtn').addEventListener('click', function(){ loadPosts(); });
 
   // ---- tabs + swipe ----
   function selectTab(cat){
@@ -412,6 +436,50 @@ main{padding-top:20px; touch-action:pan-y;}
       var idx = CAT_ORDER.indexOf(state.cat);
       if(dx < 0 && idx < CAT_ORDER.length - 1) selectTab(CAT_ORDER[idx + 1]);
       else if(dx > 0 && idx > 0) selectTab(CAT_ORDER[idx - 1]);
+    }, { passive:true });
+  })();
+
+  (function setupPullToRefresh(){
+    var main = document.getElementById('main');
+    var ptr = document.getElementById('ptr');
+    var startY = null, pulling = false, triggered = false;
+    var THRESHOLD = 64;
+
+    main.addEventListener('touchstart', function(e){
+      if(e.touches.length !== 1) return;
+      var scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+      if(scrollTop > 0) { startY = null; return; }
+      startY = e.touches[0].clientY;
+      pulling = true;
+      triggered = false;
+    }, { passive:true });
+
+    main.addEventListener('touchmove', function(e){
+      if(!pulling || startY == null) return;
+      var dy = e.touches[0].clientY - startY;
+      if(dy <= 0){ ptr.style.height = '0px'; ptr.classList.remove('spin'); return; }
+      var h = Math.min(dy * 0.5, 70);
+      ptr.style.height = h + 'px';
+      triggered = h >= THRESHOLD;
+      ptr.classList.toggle('spin', triggered);
+    }, { passive:true });
+
+    main.addEventListener('touchend', function(){
+      if(!pulling) return;
+      pulling = false;
+      startY = null;
+      if(triggered){
+        ptr.style.height = '44px';
+        ptr.classList.add('spin');
+        loadPosts({ silent:true }).then(function(){
+          ptr.style.height = '0px';
+          ptr.classList.remove('spin');
+        });
+      } else {
+        ptr.style.height = '0px';
+        ptr.classList.remove('spin');
+      }
+      triggered = false;
     }, { passive:true });
   })();
 
