@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Watcher">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f4efe4">
 <title>Watcher</title>
 <style>
 :root{
@@ -29,15 +34,24 @@
     --shadow:0 10px 30px rgba(0,0,0,.4);
   }
 }
-*{box-sizing:border-box;}
-html,body{background:var(--bg); color:var(--ink); margin:0; height:100%;}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html{-webkit-text-size-adjust:100%; text-size-adjust:100%;}
+html,body{background:var(--bg); color:var(--ink); margin:0; height:100%; overscroll-behavior-y:contain;}
 body{
   font-family:'Jost','Inter Tight','Segoe UI',system-ui,sans-serif;
-  padding-inline:18px; padding-block:0 100px;
+  padding-inline:18px;
+  padding-block:0 calc(100px + env(safe-area-inset-bottom));
+  padding-top:env(safe-area-inset-top);
   max-width:960px; margin:0 auto;
   background-image:
     radial-gradient(ellipse at top, color-mix(in srgb, var(--gold) 6%, transparent), transparent 55%);
+  touch-action:pan-y pinch-zoom;
+  overflow-x:hidden;
 }
+button, .card, .tab{ touch-action:manipulation; -webkit-user-select:none; user-select:none; }
+button{ -webkit-appearance:none; appearance:none; }
+button:active, .card:active{ transform:scale(.97); }
+.card{ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
 h1,h2,h3{font-family:'Fraunces','Georgia',serif; margin:0;}
 button{font-family:inherit;}
 
@@ -47,7 +61,7 @@ header h1{font-size:28px; font-weight:600; letter-spacing:.01em;}
 header .brand svg{width:22px; height:22px; color:var(--gold); flex-shrink:0;}
 header p{color:var(--ink-dim); font-size:12.5px; margin:3px 0 0; letter-spacing:.03em; text-transform:uppercase;}
 
-.tabs{display:flex; gap:2px; margin-top:18px; border-bottom:1px solid var(--line); overflow-x:auto; scrollbar-width:none;}
+.tabs{display:flex; gap:2px; margin-top:18px; border-bottom:1px solid var(--line); overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;}
 .tabs::-webkit-scrollbar{display:none;}
 .tab{appearance:none; border:none; background:none; cursor:pointer; padding:10px 14px; font-size:12.5px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-dim); border-bottom:2px solid transparent; margin-bottom:-1px; display:flex; align-items:center; gap:6px; white-space:nowrap;}
 .tab[aria-selected="true"]{color:var(--gold-deep); border-bottom-color:var(--gold);}
@@ -86,15 +100,15 @@ main{padding-top:20px; touch-action:pan-y;}
 .icon-btn{width:28px; height:28px; border-radius:100px; background:rgba(0,0,0,.5); color:#fff; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px;}
 .icon-btn.danger:hover{background:var(--danger);}
 
-.fab{position:fixed; right:20px; bottom:20px; width:58px; height:58px; border-radius:100px; border:none; background:linear-gradient(155deg, var(--gold), var(--gold-deep)); color:#fff; font-size:28px; cursor:pointer; box-shadow:0 8px 22px rgba(120,90,20,.35); z-index:10; display:flex; align-items:center; justify-content:center;}
+.fab{position:fixed; right:20px; bottom:calc(20px + env(safe-area-inset-bottom)); width:58px; height:58px; border-radius:100px; border:none; background:linear-gradient(155deg, var(--gold), var(--gold-deep)); color:#fff; font-size:28px; cursor:pointer; box-shadow:0 8px 22px rgba(120,90,20,.35); z-index:10; display:flex; align-items:center; justify-content:center;}
 
 /* ---- sheet (add/edit) ---- */
 .sheet-backdrop{position:fixed; inset:0; background:rgba(10,8,4,.55); z-index:20; display:flex; align-items:flex-end; justify-content:center;}
-.sheet{background:var(--surface); width:100%; max-width:540px; border-radius:20px 20px 0 0; padding:22px 20px 22px; max-height:90vh; overflow-y:auto; border-top:1px solid var(--line);}
+.sheet{background:var(--surface); width:100%; max-width:540px; border-radius:20px 20px 0 0; padding:22px 20px calc(22px + env(safe-area-inset-bottom)); max-height:90vh; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; border-top:1px solid var(--line);}
 .sheet h2{font-size:20px; font-weight:600; margin-bottom:16px;}
 .field{display:flex; flex-direction:column; gap:5px; margin-bottom:13px;}
 .field label{font-size:11px; font-weight:600; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.05em;}
-.field input, .field textarea, .field select{font-family:inherit; font-size:14.5px; padding:10px 12px; border-radius:9px; border:1px solid var(--line); background:var(--bg); color:var(--ink); width:100%;}
+.field input, .field textarea, .field select{font-family:inherit; font-size:16px; padding:10px 12px; border-radius:9px; border:1px solid var(--line); background:var(--bg); color:var(--ink); width:100%; -webkit-appearance:none; appearance:none;}
 .field textarea{resize:vertical; min-height:56px;}
 .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
 
@@ -121,7 +135,7 @@ main{padding-top:20px; touch-action:pan-y;}
 
 /* ---- spotlight ---- */
 .spot-backdrop{position:fixed; inset:0; background:rgba(6,4,2,.78); z-index:30; display:flex; align-items:center; justify-content:center; padding:16px;}
-.spot{background:var(--surface); width:100%; max-width:640px; max-height:92vh; overflow-y:auto; border-radius:18px; box-shadow:var(--shadow);}
+.spot{background:var(--surface); width:100%; max-width:640px; max-height:92vh; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; border-radius:18px; box-shadow:var(--shadow);}
 .spot .carousel{position:relative; width:100%; aspect-ratio:4/3; background:var(--surface-2); overflow:hidden;}
 .spot .carousel img{width:100%; height:100%; object-fit:cover; display:block;}
 .spot .carousel .nav{position:absolute; top:50%; transform:translateY(-50%); width:34px; height:34px; border-radius:100px; background:rgba(0,0,0,.45); color:#fff; border:none; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center;}
