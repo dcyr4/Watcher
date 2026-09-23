@@ -104,6 +104,7 @@ main{padding-top:20px; touch-action:pan-y;}
 .badge.planning{background:var(--planning-bg); color:var(--planning);}
 .badge.role{background:var(--gold-soft); color:var(--gold-deep); border:1px solid color-mix(in srgb, var(--gold) 35%, transparent);}
 @media (prefers-color-scheme: dark){ .badge.role{color:var(--gold);} }
+.badge.link{background:var(--surface-2); color:var(--ink-dim);}
 .card h3{font-size:16.5px; font-weight:600; line-height:1.25; font-family:'Fraunces',serif;}
 .card .model{font-size:11px; color:var(--ink-dim); font-family:'JetBrains Mono',monospace; letter-spacing:.02em;}
 .card .dial-price{display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--ink-dim);}
@@ -127,11 +128,19 @@ main{padding-top:20px; touch-action:pan-y;}
 .field textarea{resize:vertical; min-height:56px;}
 .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
 
-.photo-strip{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;}
-.photo-thumb{width:64px; height:64px; border-radius:9px; overflow:hidden; position:relative; flex-shrink:0;}
-.photo-thumb img{width:100%; height:100%; object-fit:cover;}
-.photo-thumb .rm{position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:100px; background:rgba(0,0,0,.6); color:#fff; border:none; font-size:11px; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1;}
-.add-photo{width:64px; height:64px; border-radius:9px; border:1.5px dashed var(--line); display:flex; align-items:center; justify-content:center; color:var(--ink-dim); font-size:20px; cursor:pointer; position:relative; flex-shrink:0;}
+.photo-strip{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px;}
+.photo-thumb{width:82px; flex-shrink:0;}
+.photo-thumb .frame{width:82px; height:82px; border-radius:9px; overflow:hidden; position:relative; border:2px solid transparent;}
+.photo-thumb.cover .frame{border-color:var(--gold);}
+.photo-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+.photo-thumb .rm{position:absolute; top:3px; right:3px; width:20px; height:20px; border-radius:100px; background:rgba(0,0,0,.6); color:#fff; border:none; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1;}
+.photo-thumb .cover-tag{position:absolute; bottom:0; left:0; right:0; background:linear-gradient(0deg, rgba(0,0,0,.65), transparent); color:#fff; font-size:9px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; text-align:center; padding:10px 0 3px;}
+.photo-thumb .thumb-row{display:flex; gap:4px; margin-top:4px;}
+.thumb-btn{flex:1; height:22px; border-radius:6px; border:1px solid var(--line); background:var(--surface); color:var(--ink-dim); font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; touch-action:manipulation;}
+.thumb-btn:disabled{opacity:.3;}
+.thumb-btn.star{color:var(--gold-deep);}
+@media (prefers-color-scheme: dark){ .thumb-btn.star{color:var(--gold);} }
+.add-photo{width:82px; height:82px; border-radius:9px; border:1.5px dashed var(--line); display:flex; align-items:center; justify-content:center; color:var(--ink-dim); font-size:22px; cursor:pointer; position:relative; flex-shrink:0;}
 .add-photo input{position:absolute; inset:0; opacity:0; cursor:pointer;}
 
 .cat-picker{display:flex; gap:6px; flex-wrap:wrap;}
@@ -169,7 +178,8 @@ main{padding-top:20px; touch-action:pan-y;}
 .spot .specs-table div{font-size:12.5px;}
 .spot .specs-table .k{color:var(--ink-dim); text-transform:uppercase; letter-spacing:.04em; font-size:10.5px; margin-bottom:2px;}
 .spot .notes{margin-top:14px; font-size:13.5px; line-height:1.55; color:var(--ink-dim); border-top:1px solid var(--line); padding-top:14px;}
-.spot .spot-actions{display:flex; gap:10px; margin-top:18px;}
+.spot .shop-link{display:block; text-align:center; text-decoration:none; margin-top:16px;}
+.spot .spot-actions{display:flex; gap:10px; margin-top:12px;}
 
 .sortbar{display:flex; align-items:center; gap:8px; margin-top:14px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;}
 .sortbar::-webkit-scrollbar{display:none;}
@@ -349,6 +359,7 @@ main{padding-top:20px; touch-action:pan-y;}
             '</div>' +
             '<div class="tagrow">' +
               (p.role ? '<span class="badge role">' + (ROLE_LABEL[p.role] || escapeHtml(p.role)) + '</span>' : '') +
+              (p.shop_url ? '<span class="badge link">&#128279; Shop</span>' : '') +
             '</div>' +
           '</div>' +
         '</div>';
@@ -499,7 +510,7 @@ main{padding-top:20px; touch-action:pan-y;}
         '<div class="sheet">' +
           '<h2 id="sheetTitle">Add a watch</h2>' +
           '<div class="field">' +
-            '<label>Photos</label>' +
+            '<label>Photos &mdash; first one is the cover</label>' +
             '<div class="photo-strip" id="photoStrip"></div>' +
             '<div class="add-photo"><span>+</span><input type="file" accept="image/*" id="fileInput" multiple></div>' +
           '</div>' +
@@ -536,6 +547,7 @@ main{padding-top:20px; touch-action:pan-y;}
             '<div class="field"><label>Water resistance</label><input id="fWr" placeholder="100m"></div>' +
           '</div>' +
           '<div class="field"><label>Crystal</label><input id="fCrystal" placeholder="Hardlex / Sapphire"></div>' +
+          '<div class="field"><label>Shop link</label><input id="fShopUrl" type="url" placeholder="https://..."></div>' +
           '<div class="field"><label>Notes</label><textarea id="fNotes" placeholder="Why you like it, where you saw it..."></textarea></div>' +
           '<div class="sheet-actions">' +
             '<button class="btn ghost" id="cancelBtn" type="button">Cancel</button>' +
@@ -561,14 +573,40 @@ main{padding-top:20px; touch-action:pan-y;}
     function renderThumbs(){
       var strip = document.getElementById('photoStrip');
       strip.innerHTML = images.map(function(src, i){
-        return '<div class="photo-thumb"><img src="' + src + '"><button type="button" class="rm" data-i="' + i + '">&times;</button></div>';
+        var isCover = i === 0;
+        return '' +
+          '<div class="photo-thumb' + (isCover ? ' cover' : '') + '">' +
+            '<div class="frame">' +
+              '<img src="' + src + '">' +
+              '<button type="button" class="rm" data-i="' + i + '">&times;</button>' +
+              (isCover ? '<div class="cover-tag">Cover</div>' : '') +
+            '</div>' +
+            '<div class="thumb-row">' +
+              '<button type="button" class="thumb-btn" data-move-left="' + i + '"' + (i === 0 ? ' disabled' : '') + '>&#8249;</button>' +
+              '<button type="button" class="thumb-btn star" data-cover="' + i + '"' + (isCover ? ' disabled' : '') + ' title="Set as cover">&#9733;</button>' +
+              '<button type="button" class="thumb-btn" data-move-right="' + i + '"' + (i === images.length - 1 ? ' disabled' : '') + '>&#8250;</button>' +
+            '</div>' +
+          '</div>';
       }).join('');
     }
     renderThumbs();
     document.getElementById('photoStrip').addEventListener('click', function(e){
-      var rm = e.target.closest('.rm');
-      if(!rm) return;
-      images.splice(Number(rm.dataset.i), 1);
+      var btn = e.target.closest('button');
+      if(!btn) return;
+      if(btn.dataset.i !== undefined){
+        images.splice(Number(btn.dataset.i), 1);
+      } else if(btn.dataset.cover !== undefined){
+        var ci = Number(btn.dataset.cover);
+        images.unshift(images.splice(ci, 1)[0]);
+      } else if(btn.dataset.moveLeft !== undefined){
+        var li = Number(btn.dataset.moveLeft);
+        if(li > 0){ var tmp = images[li - 1]; images[li - 1] = images[li]; images[li] = tmp; }
+      } else if(btn.dataset.moveRight !== undefined){
+        var ri = Number(btn.dataset.moveRight);
+        if(ri < images.length - 1){ var tmp2 = images[ri + 1]; images[ri + 1] = images[ri]; images[ri] = tmp2; }
+      } else {
+        return;
+      }
       renderThumbs();
     });
 
@@ -606,6 +644,7 @@ main{padding-top:20px; touch-action:pan-y;}
       document.getElementById('fMovement').value = existing.movement || '';
       document.getElementById('fWr').value = existing.wr || '';
       document.getElementById('fCrystal').value = existing.crystal || '';
+      document.getElementById('fShopUrl').value = existing.shop_url || '';
       document.getElementById('fNotes').value = existing.notes || '';
     }
 
@@ -629,6 +668,7 @@ main{padding-top:20px; touch-action:pan-y;}
         movement: document.getElementById('fMovement').value.trim(),
         wr: document.getElementById('fWr').value.trim(),
         crystal: document.getElementById('fCrystal').value.trim(),
+        shop_url: document.getElementById('fShopUrl').value.trim(),
         notes: document.getElementById('fNotes').value.trim(),
         category: chosenCat,
         images: images
@@ -697,6 +737,7 @@ main{padding-top:20px; touch-action:pan-y;}
               return '<div><div class="k">' + escapeHtml(pair[0]) + '</div><div>' + escapeHtml(pair[1]) + '</div></div>';
             }).join('') + '</div>' : '') +
             (post.notes ? '<div class="notes">' + escapeHtml(post.notes) + '</div>' : '') +
+            (post.shop_url ? '<a class="btn primary shop-link" href="' + escapeHtml(post.shop_url) + '" target="_blank" rel="noopener">Shop this watch</a>' : '') +
             '<div class="spot-actions">' +
               '<button class="btn ghost" id="spotEdit" type="button">Edit</button>' +
               '<button class="btn danger" id="spotDelete" type="button">Delete</button>' +
