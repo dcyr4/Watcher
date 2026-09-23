@@ -162,6 +162,14 @@ main{padding-top:20px; touch-action:pan-y;}
 .spot .notes{margin-top:14px; font-size:13.5px; line-height:1.55; color:var(--ink-dim); border-top:1px solid var(--line); padding-top:14px;}
 .spot .spot-actions{display:flex; gap:10px; margin-top:18px;}
 
+.sortbar{display:flex; align-items:center; gap:8px; margin-top:14px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;}
+.sortbar::-webkit-scrollbar{display:none;}
+.sortbar .lbl{font-size:10.5px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-dim); flex-shrink:0;}
+.sort-btn{appearance:none; border:1px solid var(--line); background:var(--surface); color:var(--ink-dim); font-family:inherit; font-size:11.5px; font-weight:600; padding:6px 11px; border-radius:100px; cursor:pointer; white-space:nowrap; flex-shrink:0; touch-action:manipulation;}
+.sort-btn[aria-pressed="true"]{border-color:var(--gold); color:var(--gold-deep); background:var(--gold-soft);}
+@media (prefers-color-scheme: dark){ .sort-btn[aria-pressed="true"]{color:var(--gold);} }
+.sort-btn .dir{margin-left:3px; opacity:.7;}
+
 .toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--ink); color:var(--bg); padding:10px 18px; border-radius:100px; font-size:13px; z-index:40; opacity:0; pointer-events:none; transition:opacity .2s;}
 .toast.show{opacity:1;}
 </style>
@@ -179,6 +187,13 @@ main{padding-top:20px; touch-action:pan-y;}
     <button class="tab" role="tab" data-cat="rotation" aria-selected="true">Rotation <span class="n" id="n-rotation">0</span></button>
     <button class="tab" role="tab" data-cat="ideas" aria-selected="false">Ideas <span class="n" id="n-ideas">0</span></button>
     <button class="tab" role="tab" data-cat="planning" aria-selected="false">Wants <span class="n" id="n-planning">0</span></button>
+  </div>
+  <div class="sortbar" id="sortbar">
+    <span class="lbl">Sort</span>
+    <button class="sort-btn" type="button" data-sort="date">Date added</button>
+    <button class="sort-btn" type="button" data-sort="alpha">A&ndash;Z</button>
+    <button class="sort-btn" type="button" data-sort="brand">Brand</button>
+    <button class="sort-btn" type="button" data-sort="price">Price</button>
   </div>
 </header>
 
@@ -200,7 +215,62 @@ main{padding-top:20px; touch-action:pan-y;}
   var CAT_LABEL = { rotation:'Rotation', ideas:'Ideas', planning:'Wants' };
   var ROLE_LABEL = { dress:'Dress', daily:'Daily', tool:'Tool', beater:'Beater', statement:'Statement' };
 
-  var state = { cat: 'rotation', posts: [] };
+  var state = { cat: 'rotation', posts: [], sortKey: 'date', sortDir: 'desc' };
+
+  function brandOf(p){
+    var t = (p.title || '').trim();
+    if(!t) return '';
+    return t.split(/\s+/)[0];
+  }
+
+  function priceValue(p){
+    var s = p.price || '';
+    var m = s.match(/[\d,]+(\.\d+)?/);
+    if(!m) return null;
+    return parseFloat(m[0].replace(/,/g, ''));
+  }
+
+  function sortItems(items){
+    var key = state.sortKey, dir = state.sortDir === 'asc' ? 1 : -1;
+    var sorted = items.slice().sort(function(a, b){
+      var av, bv;
+      if(key === 'alpha'){ av = (a.title||'').toLowerCase(); bv = (b.title||'').toLowerCase(); }
+      else if(key === 'brand'){
+        av = brandOf(a).toLowerCase(); bv = brandOf(b).toLowerCase();
+        if(av === bv){ av = (a.title||'').toLowerCase(); bv = (b.title||'').toLowerCase(); }
+      }
+      else if(key === 'price'){
+        var ap = priceValue(a), bp = priceValue(b);
+        av = ap == null ? Infinity : ap; bv = bp == null ? Infinity : bp;
+      }
+      else { av = a.created_at || 0; bv = b.created_at || 0; }
+      if(av < bv) return -1 * dir;
+      if(av > bv) return 1 * dir;
+      return 0;
+    });
+    return sorted;
+  }
+
+  function setSort(key){
+    if(state.sortKey === key){
+      state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      state.sortKey = key;
+      state.sortDir = key === 'date' ? 'desc' : 'asc';
+    }
+    document.querySelectorAll('.sort-btn').forEach(function(b){
+      var active = b.dataset.sort === state.sortKey;
+      b.setAttribute('aria-pressed', active ? 'true' : 'false');
+      var base = b.textContent.replace(/\s*[▲▼]$/, '');
+      b.innerHTML = base + (active ? ' <span class="dir">' + (state.sortDir === 'asc' ? '▲' : '▼') + '</span>' : '');
+    });
+    render();
+  }
+  document.getElementById('sortbar').addEventListener('click', function(e){
+    var b = e.target.closest('.sort-btn');
+    if(b) setSort(b.dataset.sort);
+  });
+  setSort('date');
 
   function toast(msg){
     var t = document.getElementById('toast');
@@ -229,8 +299,7 @@ main{padding-top:20px; touch-action:pan-y;}
   function render(){
     var grid = document.getElementById('grid');
     var empty = document.getElementById('empty');
-    var items = state.posts.filter(function(p){ return p.category === state.cat; })
-      .sort(function(a,b){ return (b.created_at||0) - (a.created_at||0); });
+    var items = sortItems(state.posts.filter(function(p){ return p.category === state.cat; }));
 
     CAT_ORDER.forEach(function(c){
       document.getElementById('n-' + c).textContent =
